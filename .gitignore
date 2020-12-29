@@ -1,0 +1,5 @@
+Debug/
+.vs/
+*.sln
+*.vcxproj*
+transaction_log.txt

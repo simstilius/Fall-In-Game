@@ -2,34 +2,28 @@
 //#include <ctime>
 #include <cstdlib>
 
-class Player
+#include "Player.h"
+
+
+
+class Trap
 {
-public:
-	int pos_x;
-	int pos_y;
-
-public:
-	Player(int x, int y) :
-		pos_x(x),
-		pos_y(y) {}
-
-public:
-	void Move(int del_x, int del_y);
-};
-
-
-void Player::Move(int del_x, int del_y)
-{
-	pos_x += del_x;
-	pos_y += del_y;
-}
-
-class Trap {
 public:
 	int pos_x;
 	int pos_y;
 public:
 	Trap(int x, int y) :
+		pos_x(x),
+		pos_y(y) {}
+};
+
+class Ladder
+{
+public:
+	int pos_x;
+	int pos_y;
+public:
+	Ladder(int x, int y) :
 		pos_x(x),
 		pos_y(y) {}
 };
@@ -40,6 +34,7 @@ public:
 	const int width;
 	const int height;
 	Trap traps[3] = { Trap(3,3), Trap(13,2), Trap(6, 17) };
+	Ladder ladder = Ladder(5, 5);
 
 
 public:
@@ -63,19 +58,23 @@ void Grid::Draw(Player& player)
 		{
 			if (player.pos_x == j && player.pos_y == i)
 			{
-				std::cout << "O ";
+				std::cout << player.avatar << " ";
 			}
 			else if (traps[0].pos_x == j && traps[0].pos_y == i)
 			{
-				std::cout << "X ";
+				std::cout << "@ ";
 			}
 			else if (traps[1].pos_x == j && traps[1].pos_y == i)
 			{
-				std::cout << "X ";
+				std::cout << "@ ";
 			}
 			else if (traps[2].pos_x == j && traps[2].pos_y == i)
 			{
-				std::cout << "X ";
+				std::cout << "@ ";
+			}
+			else if (ladder.pos_x == j && ladder.pos_y == i)
+			{
+				std::cout << "E ";
 			}
 			else
 			{
@@ -95,65 +94,82 @@ int main()
 	Player player(4, 3);
 	char move(' ');
 	bool lost(false);
+	bool won(false);
 
 	do
 	{
-		grid.Draw(player);
-		
+		// check if lost
 		for (int i = 0; i < 3; i++)
 		{
 			if (player.pos_x == grid.traps[i].pos_x && player.pos_y == grid.traps[i].pos_y)
 			{
-				move = 'e';
 				lost = true;
-				std::cout << "You fell into the trap :(" << std::endl;
+				player.avatar = 'X';
 			}
 		}
-
-		if (!lost)
-			std::cin >> move;
-
-		switch (move)
+		// check if won
 		{
-			case 'w':
+			if (player.pos_x == grid.ladder.pos_x && player.pos_y == grid.ladder.pos_y)
 			{
-				if (player.pos_y != 0)
-				{
-					player.Move(0, -1);
-				}
-				break;
-			}
-			case 'a':
-			{
-				if (player.pos_x != 0)
-				{
-					player.Move(-1, 0);
-				}
-				break;
-			}
-			case 's':
-			{
-				if (player.pos_y != grid.height -1)
-				{
-					player.Move(0, 1);
-				}
-				break;
-			}
-			case 'd':
-			{
-				if (player.pos_x != grid.width -1)
-				{
-					player.Move(1, 0);
-				}
-				break;
-			}
-			default:
-			{
-				// do nothing
+				won = true;
+				player.avatar = 'S';
 			}
 		}
 
-	} while (move != 'e');
+		grid.Draw(player);
+
+		if (!lost && !won)
+		{
+			std::cin >> move;
+			switch (move)
+			{
+				case 'w':
+				{
+					if (player.pos_y != 0)
+					{
+						player.Move(0, -1);
+					}
+					break;
+				}
+				case 'a':
+				{
+					if (player.pos_x != 0)
+					{
+						player.Move(-1, 0);
+					}
+					break;
+				}
+				case 's':
+				{
+					if (player.pos_y != grid.height - 1)
+					{
+						player.Move(0, 1);
+					}
+					break;
+				}
+				case 'd':
+				{
+					if (player.pos_x != grid.width - 1)
+					{
+						player.Move(1, 0);
+					}
+					break;
+				}
+				default:
+				{
+					// do nothing
+				}
+			}
+		}
+		else
+		{
+			if (lost)
+				std::cout << "You fell into the trap :(" << std::endl;
+			else if (won)
+				std::cout << "You escpaed :)" << std::endl;
+		}
+
+	} while (move != 'e' && !lost && !won);
 
 
 	return 0;
